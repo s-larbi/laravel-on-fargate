@@ -1,6 +1,6 @@
 # Steps to setup a Fargate cluster and Bitbucket Pipelines to continuously deploy Laravel on AWS
 
-## 1. Create a IAM User for Terraform in the AWS console
+## 1. Create an IAM User for Terraform in the AWS console
 ...with Programmatic Access only and with the following permissions:
 
 - `arn:aws:iam::aws:policy/AmazonS3FullAccess`
@@ -31,27 +31,38 @@ awsprofile() { export AWS_ACCESS_KEY_ID=$(aws --profile $1 configure get aws_acc
 awsprofile $PROJECT_NAME.$PROJECT_ENVIRONMENT
 ```
 
-## 3. For each new project:
+## 3. Create your infrastructure using Terraform
 
-...prepare the project for terraforming
+### Create and configure an S3 bucket as Terraform's backend
+You can use any naming norm for your S3 bucket, as long as you update the backend bucket name configuration in `providers.tf` accordingly.
 
-### Create an S3 bucket
 ```
-aws s3 mb s3://$PROJECT_ENVIRONMENT.$PROJECT_NAME.terraform
+export BUCKET_NAME=$PROJECT_ENVIRONMENT.$PROJECT_NAME.terraform
 
-aws s3api put-bucket-encryption --bucket $PROJECT_ENVIRONMENT.$PROJECT_NAME.terraform --server-side-encryption-configuration '{ "Rules": [ { "ApplyServerSideEncryptionByDefault": { "SSEAlgorithm": "AES256" } } ] }'
+aws s3 mb s3://$BUCKET_NAME
 
-aws s3api put-public-access-block --bucket $PROJECT_ENVIRONMENT.$PROJECT_NAME.terraform --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+aws s3api put-bucket-encryption --bucket $BUCKET_NAME --server-side-encryption-configuration '{ "Rules": [ { "ApplyServerSideEncryptionByDefault": { "SSEAlgorithm": "AES256" } } ] }'
 
-aws s3api put-bucket-versioning --bucket $PROJECT_ENVIRONMENT.$PROJECT_NAME.terraform --versioning-configuration MFADelete=Disabled,Status=Enabled
+aws s3api put-public-access-block --bucket $BUCKET_NAME --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+
+aws s3api put-bucket-versioning --bucket $BUCKET_NAME --versioning-configuration MFADelete=Disabled,Status=Enabled
 ```
 
-### Create the DynamoDB database
+### Create a DynamoDB database for Terraform state locking
 ```
 aws dynamodb create-table --region eu-west-2 --table-name terraform_locks --attribute-definitions AttributeName=LockID,AttributeType=S --key-schema AttributeName=LockID,KeyType=HASH --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1
 ```
 
-### Set up the Terraform project
+### Terraform apply
+Download this Terraform project as a subfolder in your Laravel project:
+```
+cd my_laravel_project
+
+git clone git@github.com:li0nel/laravel-on-fargate.git terraform
+
+cd terraform
+```
+
 ```
 export TF_VAR_project_name=$PROJECT_NAME
 
@@ -60,7 +71,7 @@ terraform init
 terraform apply
 ```
 
-### Build and deploy your Docker images manually (optional)
+### Build and deploy your Docker images manually (optional - only if you don't use BitBucket Pipelines)
 ```
 eval $(aws ecr get-login --registry-ids $(terraform output account_id) --no-include-email)
 
@@ -69,7 +80,7 @@ docker build .. --tag $(terraform output ecr_laravel_repository_uri) && docker p
 docker build .. -f Dockerfile-nginx --tag $(terraform output ecr_nginx_repository_uri) && docker push $(terraform output ecr_nginx_repository_uri)
 ```
 
-### SSH tunnelling into the database through the EC2 bastion (optional)
+### SSH tunnelling into the database through the EC2 bastion (optional - only to access the database manually)
 ```
 aws ec2 run-instances --image-id $(terraform output ec2_ami_id) --count 1 --instance-type t2.micro --key-name $(terraform output ec2_key_name) --security-group-ids $(terraform output ec2_security_group_id) --subnet-id $(terraform output ec2_public_subnet_id) --associate-public-ip-address | grep InstanceId
 
@@ -88,5 +99,10 @@ mysql -u$(terraform output aurora_db_username) -p$(terraform output aurora_maste
 ```
 aws ec2 terminate-instances --instance-ids xxxx
 ```
+
+## 4. Set up your Laravel Docker configuration
+
+## 5. Set up your BitBucket Pipelines configuration
+
 
 // TODO workers and cron
