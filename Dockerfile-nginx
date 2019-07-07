@@ -1,7 +1,7 @@
 FROM nginx
 
-ADD deploy/nginx/nginx.conf /etc/nginx/
-ADD deploy/nginx/default.conf /etc/nginx/conf.d/
+ADD https://raw.githubusercontent.com/li0nel/laravel-on-fargate/master/nginx.conf /etc/nginx/
+ADD https://raw.githubusercontent.com/li0nel/laravel-on-fargate/master/default.conf /etc/nginx/conf.d/
 
 ADD public /usr/share/nginx/html
 
