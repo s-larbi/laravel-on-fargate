@@ -102,7 +102,32 @@ aws ec2 terminate-instances --instance-ids xxxx
 
 ## 4. Set up your Laravel Docker configuration
 
+```
+curl https://raw.githubusercontent.com/li0nel/laravel-on-fargate/master/Dockerfile > Dockerfile
+
+curl https://raw.githubusercontent.com/li0nel/laravel-on-fargate/master/Dockerfile-nginx > Dockerfile-nginx
+```
+
 ## 5. Set up your BitBucket Pipelines configuration
 
+```
+curl https://raw.githubusercontent.com/li0nel/laravel-on-fargate/master/bitbucket-pipelines.yml > bitbucket-pipelines.yml
+```
+
+Then setup the following variables in your BitBucket project's `Settings > Pipelines > Repository variables` from the Terraform output values
+
+- `AWS_ACCOUNT_ID`
+- `ECR_LARAVEL_URI`
+- `ECR_NGINX_URI`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_REGION`
+- `ECS_TASK_DEFINITION`
+- `ECS_CLUSTER_NAME`
+- `ECS_SERVICE_NAME`
+
+That's it.
+
+On the next commit to master, BitBucket Pipelines will build and deploy your Laravel project to your Fargate cluster!
 
 // TODO workers and cron
