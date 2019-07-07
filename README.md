@@ -1,5 +1,7 @@
 # Deploy Laravel on AWS using Fargate and BitBucket Pipelines
 
+![infrastructure-overview](images/infrastructure.png)
+
 ## 1. Create an IAM User for Terraform in the AWS console
 ...with Programmatic Access only and with the following permissions:
 
@@ -71,6 +73,8 @@ terraform init
 terraform apply
 ```
 
+![terraform-state](images/terraform-state.png)
+
 ### Build and deploy your Docker images manually (optional - only if you don't use BitBucket Pipelines)
 ```
 eval $(aws ecr get-login --registry-ids $(terraform output account_id) --no-include-email)
@@ -129,5 +133,7 @@ Then setup the following variables in your BitBucket project's `Settings > Pipel
 That's it.
 
 On the next commit to master, BitBucket Pipelines will build and deploy your Laravel project to your Fargate cluster!
+
+![bitbucket-pipeline](images/bitbucket-pipeline.png)
 
 // TODO workers and cron
