@@ -107,6 +107,8 @@ aws ec2 terminate-instances --instance-ids xxxx
 ## 4. Set up your Laravel Docker configuration
 
 ```
+cd my_laravel_project
+
 curl https://raw.githubusercontent.com/li0nel/laravel-on-fargate/master/Dockerfile > Dockerfile
 
 curl https://raw.githubusercontent.com/li0nel/laravel-on-fargate/master/Dockerfile-nginx > Dockerfile-nginx
@@ -115,6 +117,8 @@ curl https://raw.githubusercontent.com/li0nel/laravel-on-fargate/master/Dockerfi
 ## 5. Set up your BitBucket Pipelines configuration
 
 ```
+cd my_laravel_project
+
 curl https://raw.githubusercontent.com/li0nel/laravel-on-fargate/master/bitbucket-pipelines.yml > bitbucket-pipelines.yml
 ```
 
