@@ -136,4 +136,6 @@ On the next commit to master, BitBucket Pipelines will build and deploy your Lar
 
 ![bitbucket-pipeline](images/bitbucket-pipelines.png)
 
+![laravel-on-fargate](images/laravel-on-fargate.png)
+
 // TODO workers and cron
