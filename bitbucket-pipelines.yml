@@ -1,0 +1,36 @@
+# This is a sample build configuration for PHP.
+# Check our guides at https://confluence.atlassian.com/x/e8YWN for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image: atlassian/pipelines-awscli
+
+pipelines:
+  branches:
+    master:
+      - step:
+          script:
+            - export BITBUCKET_COMMIT_SHORT=$(echo $BITBUCKET_COMMIT | cut -c1-7)
+            - eval $(aws ecr --region $AWS_REGION get-login --registry-ids $AWS_ACCOUNT_ID --no-include-email)
+            - docker build -t $ECR_LARAVEL_URI:$BITBUCKET_COMMIT_SHORT .
+            - docker push $ECR_LARAVEL_URI:$BITBUCKET_COMMIT_SHORT
+            - docker build -t $ECR_NGINX_URI:$BITBUCKET_COMMIT_SHORT -f Dockerfile-nginx .
+            - docker push $ECR_NGINX_URI:$BITBUCKET_COMMIT_SHORT
+          services:
+            - docker
+      - step:
+          script:
+            - export BITBUCKET_COMMIT_SHORT=$(echo $BITBUCKET_COMMIT | cut -c1-7)
+            - aws ecs --region $AWS_REGION describe-task-definition --task-definition $ECS_TASK_DEFINITION | jq '.taskDefinition | del(.revision) | del(.taskDefinitionArn) | del(.status) | del(.compatibilities) | del(.requiresAttributes)' | sed 's/"image":[ ]"\([^:]*\):[^"]*"/"image":"\1:'"$BITBUCKET_COMMIT_SHORT"'"/g' > task_definitions.json
+          artifacts:
+          - task_definitions.json
+      - step:
+          script:
+            - pipe: atlassian/aws-ecs-deploy:0.3.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: $AWS_REGION
+                ECS_CLUSTER_NAME: $ECS_CLUSTER_NAME
+                ECS_SERVICE_NAME: $ECS_SERVICE_NAME
+                ECS_TASK_DEFINITION: 'task_definitions.json'
