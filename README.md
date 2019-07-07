@@ -1,4 +1,4 @@
-# Deploy Laravel on AWS using Fargate and Bitbucket Pipelines
+# Deploy Laravel on AWS using Fargate and BitBucket Pipelines
 
 ## 1. Create an IAM User for Terraform in the AWS console
 ...with Programmatic Access only and with the following permissions:
