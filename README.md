@@ -134,6 +134,6 @@ That's it.
 
 On the next commit to master, BitBucket Pipelines will build and deploy your Laravel project to your Fargate cluster!
 
-![bitbucket-pipeline](images/bitbucket-pipeline.png)
+![bitbucket-pipeline](images/bitbucket-pipelines.png)
 
 // TODO workers and cron
