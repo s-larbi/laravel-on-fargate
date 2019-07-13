@@ -66,7 +66,7 @@ module "ecs" {
 
 module "ecr" {
   source               = "./modules/ecr"
-  stack_name           = local.stack_name
+  stack_name           = replace(local.stack_name, "/[^a-zA-Z0-9]+/", "")
   ci_pipeline_user_arn = module.iam.ci_pipeline_arn
   ecs_role             = module.iam.ecs_role
 }

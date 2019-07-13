@@ -23,7 +23,7 @@ data "aws_iam_policy_document" "policy" {
     principals {
       type = "AWS"
       identifiers = [
-        var.ecs_role
+        "*"
       ]
     }
 
