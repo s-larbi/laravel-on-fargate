@@ -123,7 +123,7 @@ resource "aws_ecs_task_definition" "app" {
     env_vars = {
       LOG_CHANNEL   = "stderr"
       APP_DEBUG     = false
-      APP_URL       = "https://${var.domain_name}"
+      APP_URL       = "https://${var.hostname}"
       DB_CONNECTION = "mysql"
       DB_HOST       = var.aurora_endpoint
       DB_PORT       = var.aurora_port

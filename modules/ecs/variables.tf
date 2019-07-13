@@ -27,7 +27,7 @@ variable "certificate_arn" {
   type = string
 }
 
-variable "domain_name" {
+variable "hostname" {
   type = string
 }
 

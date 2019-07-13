@@ -35,7 +35,7 @@ output "vpc_public_subnet_ids" {
 }
 
 output "vpc_public_subnet_id" {
-  value = module.vpc.public_subnet_ids[0]
+  value = length(module.vpc.public_subnet_ids) > 0 ? module.vpc.public_subnet_ids[0] : ""
 }
 
 output "vpc_private_subnet_ids" {

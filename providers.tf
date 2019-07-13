@@ -11,7 +11,6 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket               = "com.laravelaws.terraform"
     key                  = "main.tfstate"
     region               = "eu-west-2"
     workspace_key_prefix = "workspaces"

@@ -21,16 +21,14 @@
 ```
 export PROJECT_NAME=your_project_name_here
 
-export PROJECT_ENVIRONMENT=staging
-
-aws --profile $PROJECT_NAME.$PROJECT_ENVIRONMENT configure
+aws --profile $PROJECT_NAME configure
 ```
 
 Save the below function into your terminal to easily load an AWS profile in a terminal instance (optional):
 ```
 awsprofile() { export AWS_ACCESS_KEY_ID=$(aws --profile $1 configure get aws_access_key_id) && export AWS_SECRET_ACCESS_KEY=$(aws --profile $1 configure get aws_secret_access_key); }
 
-awsprofile $PROJECT_NAME.$PROJECT_ENVIRONMENT
+awsprofile $PROJECT_NAME
 ```
 
 ## 3. Create your infrastructure using Terraform
@@ -39,7 +37,7 @@ awsprofile $PROJECT_NAME.$PROJECT_ENVIRONMENT
 You can use any naming norm for your S3 bucket, as long as you update the backend bucket name configuration in `providers.tf` accordingly.
 
 ```
-export BUCKET_NAME=$PROJECT_ENVIRONMENT.$PROJECT_NAME.terraform
+export BUCKET_NAME=com.laravelaws.tf.$PROJECT_NAME
 
 aws s3 mb s3://$BUCKET_NAME
 
@@ -68,7 +66,10 @@ cd terraform
 ```
 export TF_VAR_project_name=$PROJECT_NAME
 
-terraform init
+terraform init -backend-config="bucket=$BUCKET_NAME"
+
+// If you don't have one in Route53 already, create a Hosted Zone for your domain
+aws route53 create-hosted-zone --name YOUR_DOMAIN --caller-reference "$(date)"
 
 terraform apply
 ```

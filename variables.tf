@@ -6,6 +6,6 @@ variable "aws_region" {
   type = string
 }
 
-variable "domain_name" {
+variable "domain" {
   type = string
 }

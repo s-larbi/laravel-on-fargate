@@ -6,6 +6,10 @@ variable "alb_zone_id" {
   type = string
 }
 
-variable "domain_name" {
+variable "domain" {
+  type = string
+}
+
+variable "hostname" {
   type = string
 }

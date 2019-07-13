@@ -1,5 +1,5 @@
 *.tfstate
 *.tfstate.backup
-README_aws_organization.md
 key-*
 .terraform
+.DS_Store

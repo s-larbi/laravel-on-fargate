@@ -38,7 +38,7 @@ resource "aws_security_group" "db_security_group" {
 resource "aws_rds_cluster" "aurora_cluster" {
   engine                       = "aurora-mysql"
   engine_version               = "5.7.12"
-  database_name                = "${var.stack_name}_db"
+  database_name                = replace(var.stack_name, "/[^a-zA-Z0-9]+/", "")
   master_username              = "aurora"
   master_password              = random_string.rds_master_password.result
   backup_retention_period      = 35

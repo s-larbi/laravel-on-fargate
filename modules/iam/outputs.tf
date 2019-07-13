@@ -1,7 +1,3 @@
-# output "gsuite_saml_provider_arn" {
-#   value = aws_iam_saml_provider.gsuite.arn
-# }
-
 output "ci_pipeline_access_key_id" {
   value = aws_iam_access_key.ci_pipeline.id
 }

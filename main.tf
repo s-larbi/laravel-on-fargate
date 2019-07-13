@@ -3,9 +3,11 @@ data "aws_availability_zones" "available" {}
 data "aws_caller_identity" "current" {}
 
 locals {
-  # stack_name = terraform.workspace == "default" ? var.project_name : join("-", [var.project_name, terraform.workspace])
-  stack_name = var.project_name
+  stack_name = terraform.workspace == "default" ? var.project_name : join("-", [var.project_name, terraform.workspace])
+  hostname   = terraform.workspace == "default" ? var.domain : join(".", [terraform.workspace, var.domain])
 }
+
+// TODO any other subdomain should redirect to APEX
 
 module "iam" {
   source = "./modules/iam"
@@ -21,9 +23,14 @@ module "vpc" {
 
 module "route53" {
   source       = "./modules/route53"
-  domain_name  = var.domain_name
+  domain       = var.domain
+  hostname     = local.hostname
   alb_hostname = module.ecs.ecs_alb_hostname
   alb_zone_id  = module.ecs.ecs_alb_zone_id
+  
+  providers = {
+    aws = "aws.us-east-1"
+  }
 }
 
 module "aurora" {
@@ -35,7 +42,7 @@ module "aurora" {
 
 module "acm" {
   source         = "./modules/acm"
-  domain_name    = var.domain_name
+  hostname       = local.hostname
   hosted_zone_id = module.route53.hosted_zone_id
 }
 
@@ -47,7 +54,7 @@ module "ecs" {
   private_subnet_ids         = module.vpc.private_subnet_ids
   role                       = module.iam.ecs_role
   certificate_arn            = module.acm.certificate_arn
-  domain_name                = var.domain_name
+  hostname                   = local.hostname
   aurora_endpoint            = module.aurora.aurora_endpoint
   aurora_port                = module.aurora.aurora_port
   aurora_db_name             = module.aurora.aurora_db_name
