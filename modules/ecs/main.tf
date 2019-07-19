@@ -111,8 +111,8 @@ resource "aws_ecs_task_definition" "app" {
   family                   = "app"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = 2048
-  memory                   = 4096
+  cpu                      = 1024
+  memory                   = 2048
   execution_role_arn       = var.role
 
   container_definitions = templatefile("${path.module}/task-definitions.json", {
@@ -147,7 +147,8 @@ resource "aws_ecs_service" "main" {
 
   network_configuration {
     security_groups = [aws_security_group.ecs_tasks.id]
-    subnets         = var.private_subnet_ids
+    subnets         = var.public_subnet_ids
+    assign_public_ip = true
   }
 
   load_balancer {

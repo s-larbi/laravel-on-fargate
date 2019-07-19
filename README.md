@@ -95,7 +95,7 @@ aws ec2 describe-instances --instance-ids xxxx | grep PublicIpAddress
 ```
 ssh ubuntu@xxxxx -i $(terraform output ec2_ssh_key_path) -L 3306:$(terraform output aurora_endpoint):3306
 ```
-
+  
 Then connect using your favourite MySQL client
 ```
 mysql -u$(terraform output aurora_db_username) -p$(terraform output aurora_master_password) -h 127.0.0.1 -D $(terraform output aurora_db_name)
@@ -126,14 +126,16 @@ curl https://raw.githubusercontent.com/li0nel/laravel-on-fargate/master/bitbucke
 Then setup the following variables in your BitBucket project's `Settings > Pipelines > Repository variables` from the Terraform output values
 
 - `AWS_ACCOUNT_ID`
-- `ECR_LARAVEL_URI`
-- `ECR_NGINX_URI`
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
+- `ECR_LARAVEL_URI_*`
+- `ECR_NGINX_URI_*`
+- `AWS_ACCESS_KEY_ID_*`
+- `AWS_SECRET_ACCESS_KEY_*`
 - `AWS_REGION`
 - `ECS_TASK_DEFINITION`
-- `ECS_CLUSTER_NAME`
-- `ECS_SERVICE_NAME`
+- `ECS_CLUSTER_NAME_*`
+- `ECS_SERVICE_NAME_*`
+
+... where * is each of `PRODUCTION` and `STAGING`
 
 That's it.
 

@@ -31,7 +31,7 @@ resource "aws_iam_policy" "ci_pipeline" {
   policy = data.aws_iam_policy_document.ci_pipeline.json
 }
 
-resource "aws_iam_user_policy_attachment" "test-attach" {
+resource "aws_iam_user_policy_attachment" "attachment" {
   user       = aws_iam_user.ci_pipeline.name
   policy_arn = aws_iam_policy.ci_pipeline.arn
 }

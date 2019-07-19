@@ -11,5 +11,5 @@ output "ci_pipeline_arn" {
 }
 
 output "ecs_role" {
-  value = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/laravel"
+  value = aws_iam_role.role.arn
 }

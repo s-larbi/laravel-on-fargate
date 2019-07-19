@@ -13,12 +13,10 @@ module "iam" {
   source = "./modules/iam"
 }
 
-// TODO use VPC endpoints for ECR and ECS (and eventually SQS and S3) rather than NAT Gateway
-// https://noise.getoto.net/2019/01/25/setting-up-aws-privatelink-for-aws-fargate-amazon-ecs-and-amazon-ecr/
 module "vpc" {
   source        = "./modules/vpc"
   stack_name    = local.stack_name
-  b_nat_gateway = true
+  b_nat_gateway = false
 }
 
 module "route53" {
@@ -70,7 +68,5 @@ module "ecr" {
   ci_pipeline_user_arn = module.iam.ci_pipeline_arn
   ecs_role             = module.iam.ecs_role
 }
-
-// TODO remove NAT Gateway
 
 // TODO Artisan workers & crons
