@@ -7,10 +7,44 @@ image: atlassian/pipelines-awscli
 
 pipelines:
   branches:
+    develop:
+      - step:
+          script:
+            - export BITBUCKET_COMMIT_SHORT=$(echo $BITBUCKET_COMMIT | cut -c1-7)
+            - export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_STAGING
+            - export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_STAGING
+            - export ECR_LARAVEL_URI=$ECR_LARAVEL_URI_STAGING
+            - export ECR_NGINX_URI=$ECR_NGINX_URI_STAGING
+            - eval $(aws ecr --region $AWS_REGION get-login --registry-ids $AWS_ACCOUNT_ID --no-include-email)
+            - docker build -t $ECR_LARAVEL_URI:$BITBUCKET_COMMIT_SHORT .
+            - docker push $ECR_LARAVEL_URI:$BITBUCKET_COMMIT_SHORT
+            - docker build -t $ECR_NGINX_URI:$BITBUCKET_COMMIT_SHORT -f Dockerfile-nginx .
+            - docker push $ECR_NGINX_URI:$BITBUCKET_COMMIT_SHORT
+            - aws ecs --region $AWS_REGION describe-task-definition --task-definition $ECS_TASK_DEFINITION | jq '.taskDefinition | del(.revision) | del(.taskDefinitionArn) | del(.status) | del(.compatibilities) | del(.requiresAttributes)' | sed 's/"image":[ ]"\([^:]*\):[^"]*"/"image":"\1:'"$BITBUCKET_COMMIT_SHORT"'"/g' > task_definitions.json
+          services:
+            - docker
+          cache:
+            - docker
+          artifacts:
+          - task_definitions.json
+      - step:
+          script:
+            - pipe: atlassian/aws-ecs-deploy:0.3.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_STAGING
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_STAGING
+                AWS_DEFAULT_REGION: $AWS_REGION
+                ECS_CLUSTER_NAME: $ECS_CLUSTER_NAME_STAGING
+                ECS_SERVICE_NAME: $ECS_SERVICE_NAME_STAGING
+                ECS_TASK_DEFINITION: 'task_definitions.json'
     master:
       - step:
           script:
             - export BITBUCKET_COMMIT_SHORT=$(echo $BITBUCKET_COMMIT | cut -c1-7)
+            - export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_PRODUCTION
+            - export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_PRODUCTION
+            - export ECR_LARAVEL_URI=$ECR_LARAVEL_URI_PRODUCTION
+            - export ECR_NGINX_URI=$ECR_NGINX_URI_PRODUCTION
             - eval $(aws ecr --region $AWS_REGION get-login --registry-ids $AWS_ACCOUNT_ID --no-include-email)
             - docker build -t $ECR_LARAVEL_URI:$BITBUCKET_COMMIT_SHORT .
             - docker push $ECR_LARAVEL_URI:$BITBUCKET_COMMIT_SHORT
@@ -21,16 +55,18 @@ pipelines:
       - step:
           script:
             - export BITBUCKET_COMMIT_SHORT=$(echo $BITBUCKET_COMMIT | cut -c1-7)
+            - export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_PRODUCTION
+            - export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_PRODUCTION
             - aws ecs --region $AWS_REGION describe-task-definition --task-definition $ECS_TASK_DEFINITION | jq '.taskDefinition | del(.revision) | del(.taskDefinitionArn) | del(.status) | del(.compatibilities) | del(.requiresAttributes)' | sed 's/"image":[ ]"\([^:]*\):[^"]*"/"image":"\1:'"$BITBUCKET_COMMIT_SHORT"'"/g' > task_definitions.json
           artifacts:
-          - task_definitions.json
+            - task_definitions.json
       - step:
           script:
             - pipe: atlassian/aws-ecs-deploy:0.3.0
               variables:
-                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_PRODUCTION
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_PRODUCTION
                 AWS_DEFAULT_REGION: $AWS_REGION
-                ECS_CLUSTER_NAME: $ECS_CLUSTER_NAME
-                ECS_SERVICE_NAME: $ECS_SERVICE_NAME
+                ECS_CLUSTER_NAME: $ECS_CLUSTER_NAME_PRODUCTION
+                ECS_SERVICE_NAME: $ECS_SERVICE_NAME_PRODUCTION
                 ECS_TASK_DEFINITION: 'task_definitions.json'

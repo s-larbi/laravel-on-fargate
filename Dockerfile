@@ -1,4 +1,4 @@
-FROM php:7.2-fpm
+FROM php:7.3-fpm-stretch
 
 # Copy composer.lock and composer.json
 COPY composer.json /var/www/html
@@ -9,12 +9,13 @@ WORKDIR /var/www/html
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
-    mysql-client \
+    default-mysql-client \
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
     locales \
     zip \
+    libzip-dev \
     jpegoptim optipng pngquant gifsicle \
     vim \
     unzip \
